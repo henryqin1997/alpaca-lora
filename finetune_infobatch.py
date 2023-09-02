@@ -6,8 +6,9 @@ import fire
 import torch
 import transformers
 from datasets import load_dataset
-from overload import forward, _get_train_sampler, get_train_dataloader
+from overload import base_model_forward, _get_train_sampler, get_train_dataloader
 import inspect
+from infobatch import InfoBatch
 """
 Unused imports:
 import torch.nn as nn
@@ -211,23 +212,23 @@ def train(
 
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
-    print(inspect.getsource(model.base_model.forward))
-    import pdb; pdb.set_trace()
-    exit(0)
+    model.model.forward = base_model_forward.__get__(model.model, model.model.__class__)
 
     if val_set_size > 0:
         train_val = data["train"].train_test_split(
             test_size=val_set_size, shuffle=True, seed=42
         )
-        train_data = (
-            train_val["train"].shuffle().map(generate_and_tokenize_prompt)
+        train_data = InfoBatch(
+            train_val["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=3
         )
         val_data = (
             train_val["test"].shuffle().map(generate_and_tokenize_prompt)
         )
     else:
-        train_data = data["train"].shuffle().map(generate_and_tokenize_prompt)
+        train_data = InfoBatch(data["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=3)
         val_data = None
+
+    model.trainset = train_data
 
     if not ddp and torch.cuda.device_count() > 1:
         # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available

@@ -7,7 +7,7 @@ import torch.utils.checkpoint
 
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, RandomSampler
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 def forward(
@@ -22,6 +22,7 @@ def forward(
         task_ids=None,
         **kwargs,
     ):
+    '''inspected from peft code; actually running model.base_model.forward -> model.model.forward'''
         peft_config = self.active_peft_config
         if not peft_config.is_prompt_learning:
             if self.base_model.config.model_type == "mpt":
@@ -87,6 +88,9 @@ def forward(
             inputs_embeds = torch.cat((prompts, inputs_embeds), dim=1)
             return self.base_model(inputs_embeds=inputs_embeds, **kwargs)
 
+
+# @add_start_docstrings_to_model_forward(LLAMA_INPUTS_DOCSTRING)
+# @replace_return_docstrings(output_type=CausalLMOutputWithPast, config_class=_CONFIG_FOR_DOC)
 def base_model_forward(
         self,
         input_ids: torch.LongTensor = None,
@@ -186,25 +190,26 @@ def _get_train_sampler(self, sampler=None) -> Optional[torch.utils.data.Sampler]
             return None
 
         # Build the sampler.
-        if self.args.group_by_length:
-            if is_datasets_available() and isinstance(self.train_dataset, datasets.Dataset):
-                lengths = (
-                    self.train_dataset[self.args.length_column_name]
-                    if self.args.length_column_name in self.train_dataset.column_names
-                    else None
-                )
-            else:
-                lengths = None
-            model_input_name = self.tokenizer.model_input_names[0] if self.tokenizer is not None else None
-            return LengthGroupedSampler(
-                self.args.train_batch_size * self.args.gradient_accumulation_steps,
-                dataset=self.train_dataset,
-                lengths=lengths,
-                model_input_name=model_input_name,
-            )
-
-        else:
-            return RandomSampler(self.train_dataset)
+#         if self.args.group_by_length:
+#             if is_datasets_available() and isinstance(self.train_dataset, datasets.Dataset):
+#                 lengths = (
+#                     self.train_dataset[self.args.length_column_name]
+#                     if self.args.length_column_name in self.train_dataset.column_names
+#                     else None
+#                 )
+#             else:
+#                 lengths = None
+#             model_input_name = self.tokenizer.model_input_names[0] if self.tokenizer is not None else None
+#             return LengthGroupedSampler(
+#                 self.args.train_batch_size * self.args.gradient_accumulation_steps,
+#                 dataset=self.train_dataset,
+#                 lengths=lengths,
+#                 model_input_name=model_input_name,
+#             )
+#
+#         else:
+#             return RandomSampler(self.train_dataset)
+        return self.train_dataset.pruning_sampler()
 
 def get_train_dataloader(self) -> DataLoader:
     """
