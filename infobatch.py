@@ -30,7 +30,7 @@ class InfoBatch(Dataset):
 
     def __getitem__(self, index):
         self.last_indexes = index
-        return self.dataset(index)
+        return self.dataset[index]
 
 #         if has_length(index):
 #             data = [self.dataset[idx] for idx in index]
