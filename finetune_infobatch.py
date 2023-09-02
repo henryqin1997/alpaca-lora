@@ -211,7 +211,7 @@ def train(
 
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
-    print(inspect.getsource(model.forward))
+    print(inspect.getsource(model.base_model.forward))
     exit(0)
 
     if val_set_size > 0:
