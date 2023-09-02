@@ -6,7 +6,7 @@ import fire
 import torch
 import transformers
 from datasets import load_dataset
-from overload.py import forward, _get_train_sampler, get_train_dataloader
+from overload import forward, _get_train_sampler, get_train_dataloader
 import inspect
 """
 Unused imports:
