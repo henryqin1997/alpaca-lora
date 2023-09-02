@@ -29,10 +29,16 @@ class InfoBatch(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        if has_length(index):
-            data = [self.dataset[idx] for idx in index]
-            weight = [self.weights[idx] for idx in index]
-            return data, index, weight
+        self.last_indexes = index
+        return self.data(index)
+
+#         if has_length(index):
+#             data = [self.dataset[idx] for idx in index]
+#             weight = [self.weights[idx] for idx in index]
+#             return data, index, weight
+
+    def __get_wt_id__(self):
+        return self.weights[self.last_indexes], self.last_indexes
 
     def prune(self):
         # prune samples that are well learned, rebalence the weight by scaling up remaining
