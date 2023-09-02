@@ -184,6 +184,16 @@ def base_model_forward(
         attentions=outputs.attentions,
     )
 
+def has_length(dataset):
+    """
+    Checks if the dataset implements __len__() and it doesn't raise an error
+    """
+    try:
+        return len(dataset) is not None
+    except TypeError:
+        # TypeError: len() of unsized object
+        return False
+
 def _get_train_sampler(self, sampler=None) -> Optional[torch.utils.data.Sampler]:
         print("_get_train_sampler is called")
         if self.train_dataset is None or not has_length(self.train_dataset):
