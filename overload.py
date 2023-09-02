@@ -7,7 +7,7 @@ import torch.utils.checkpoint
 
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
-form torch.utils.data import DataLoader
+from torch.utils.data import DataLoader
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 def forward(
