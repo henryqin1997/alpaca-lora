@@ -212,6 +212,7 @@ def train(
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
 
     print(inspect.getsource(model.base_model.forward))
+    import pdb; pdb.set_trace()
     exit(0)
 
     if val_set_size > 0:
