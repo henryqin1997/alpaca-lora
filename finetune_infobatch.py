@@ -6,7 +6,7 @@ import fire
 import torch
 import transformers
 from datasets import load_dataset
-from overload import base_model_forward, _get_train_sampler, get_train_dataloader
+from overload import base_model_forward, _get_train_sampler
 import inspect
 from infobatch import InfoBatch
 """
@@ -266,7 +266,7 @@ def train(
     )
 
     trainer._get_train_sampler = _get_train_sampler.__get__(trainer,trainer.__class__)
-    trainer.get_train_dataloader = get_train_dataloader.__get__(trainer,trainer.__class__)
+#     trainer.get_train_dataloader = get_train_dataloader.__get__(trainer,trainer.__class__)
 
     model.config.use_cache = False
 
