@@ -2,6 +2,16 @@ import math
 import numpy as np
 from torch.utils.data import Dataset
 
+def has_length(dataset):
+    """
+    Checks if the dataset implements __len__() and it doesn't raise an error
+    """
+    try:
+        return len(dataset) is not None
+    except TypeError:
+        # TypeError: len() of unsized object
+        return False
+
 class InfoBatch(Dataset):
     def __init__(self, dataset, ratio = 0.5, num_epoch=None, delta = 0.875):
         self.dataset = dataset
@@ -19,9 +29,10 @@ class InfoBatch(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        data = self.dataset[index]
-        weight = self.weights[index]
-        return data, index, weight
+        if has_length(index):
+            data = [self.dataset[idx] for idx in index]
+            weight = [self.weights[idx] for idx in index]
+            return data, index, weight
 
     def prune(self):
         # prune samples that are well learned, rebalence the weight by scaling up remaining
