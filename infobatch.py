@@ -30,13 +30,13 @@ class InfoBatch(Dataset):
 
     def __getitem__(self, index):
         if isinstance(index, np.int64):
-            index = int(index)
+            idx = int(index)
 #         self.last_indexes = index
 #         return self.dataset[index]
-            return self.dataset[index], index, weight
+            return self.dataset[idx], index, self.weights[idx]
         if has_length(index):
-            data = [self.dataset[idx] for idx in index]
-            weight = [self.weights[idx] for idx in index]
+            data = [self.dataset[int(idx)] for idx in index]
+            weight = [self.weights[int(idx)] for idx in index]
             return data, index, weight
 
     def __get_wt_id__(self):
