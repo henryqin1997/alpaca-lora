@@ -217,16 +217,16 @@ def train(
     model.model.forward = base_model_forward.__get__(model.model, model.model.__class__)
 
     if val_set_size > 0:
-        train_val = data["train"].train_test_split(
-            test_size=val_set_size, shuffle=True, seed=42
-        )
+#         train_val = data["train"].train_test_split(
+#             test_size=val_set_size, shuffle=True, seed=42
+#         )
 
         val_dataset = val_dataset["train"].train_test_split(
             test_size=val_set_size, shuffle=True, seed=42
         )
 
         train_data = InfoBatch(
-            train_val["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=num_epochs
+            data["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=num_epochs
         )
         val_data = (
             val_dataset["test"].shuffle().map(generate_and_tokenize_prompt)
