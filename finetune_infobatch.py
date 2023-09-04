@@ -190,6 +190,8 @@ def train(
     else:
         data = load_dataset(data_path)
 
+    val_dataset = load_dataset("json", data_files='alpaca_data_cleaned_archive.json')
+
     if resume_from_checkpoint:
         # Check the available weights and load them
         checkpoint_name = os.path.join(
@@ -218,11 +220,16 @@ def train(
         train_val = data["train"].train_test_split(
             test_size=val_set_size, shuffle=True, seed=42
         )
+
+        val_dataset = val_dataset["train"].train_test_split(
+            test_size=val_set_size, shuffle=True, seed=42
+        )
+
         train_data = InfoBatch(
             train_val["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=num_epochs
         )
         val_data = (
-            train_val["test"].shuffle().map(generate_and_tokenize_prompt)
+            val_dataset["test"].shuffle().map(generate_and_tokenize_prompt)
         )
     else:
         train_data = InfoBatch(data["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=num_epochs)
