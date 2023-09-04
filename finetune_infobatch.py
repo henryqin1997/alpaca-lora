@@ -219,16 +219,16 @@ def train(
             test_size=val_set_size, shuffle=True, seed=42
         )
         train_data = InfoBatch(
-            train_val["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=3
+            train_val["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=num_epochs
         )
         val_data = (
             train_val["test"].shuffle().map(generate_and_tokenize_prompt)
         )
     else:
-        train_data = InfoBatch(data["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=3)
+        train_data = InfoBatch(data["train"].shuffle().map(generate_and_tokenize_prompt), num_epoch=num_epochs)
         val_data = None
 
-    model.trainset = train_data
+    model.model.trainset = train_data
 
     if not ddp and torch.cuda.device_count() > 1:
         # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available

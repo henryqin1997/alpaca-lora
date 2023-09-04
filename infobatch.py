@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import copy
 from torch.utils.data import Dataset
 
 def has_length(dataset):
@@ -29,15 +30,22 @@ class InfoBatch(Dataset):
         return len(self.dataset)
 
     def __getitem__(self, index):
-        if isinstance(index, np.int64):
-            idx = int(index)
-#         self.last_indexes = index
-#         return self.dataset[index]
-            return self.dataset[idx], index, self.weights[idx]
+        idx = int(index)
+        data = {k:v for k,v in self.dataset[idx].items()}
+        data.update({'sample_idx': index, 'weight':self.weights[idx]})
+        return data
+
+    def __getitems__(self,index):
+        """possibly batched index"""
+        # print('InfoBatch.__getitems__ called')
         if has_length(index):
-            data = [self.dataset[int(idx)] for idx in index]
-            weight = [self.weights[int(idx)] for idx in index]
-            return data, index, weight
+            data = [{k:v for k,v in self.dataset[int(idx)].items()} for idx in index]
+            for i,idx in enumerate(index):
+                data[i]['sample_idx'] = idx
+                data[i]['weight'] = self.weights[int(idx)]
+        else: raise ValueError("infobatch __getitems__ got index with no length!")
+        # print(data)
+        return data
 
     def __get_wt_id__(self):
         return self.weights[self.last_indexes], self.last_indexes

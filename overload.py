@@ -103,6 +103,8 @@ def base_model_forward(
     output_attentions: Optional[bool] = None,
     output_hidden_states: Optional[bool] = None,
     return_dict: Optional[bool] = None,
+    sample_idx: Optional[int] = None,
+    weight: Optional[float] = None
 ) -> Union[Tuple, CausalLMOutputWithPast]:
     r"""
     Args:
@@ -149,6 +151,10 @@ def base_model_forward(
         return_dict=return_dict,
     )
 
+    # print('input_ids',input_ids)
+    # print('weight',weight)
+    # print('sample_idx',sample_idx)
+
     hidden_states = outputs[0]
     if self.config.pretraining_tp > 1:
         lm_head_slices = self.lm_head.weight.split(self.vocab_size // self.config.pretraining_tp, dim=0)
@@ -164,13 +170,25 @@ def base_model_forward(
         shift_logits = logits[..., :-1, :].contiguous()
         shift_labels = labels[..., 1:].contiguous()
         # Flatten the tokens
-#             loss_fct = CrossEntropyLoss()
+        # loss_fct = CrossEntropyLoss()
         loss_fct = CrossEntropyLoss(reduction='none')
         shift_logits = shift_logits.view(-1, self.config.vocab_size)
         shift_labels = shift_labels.view(-1)
         # Enable model parallelism
         shift_labels = shift_labels.to(shift_logits.device)
         loss = loss_fct(shift_logits, shift_labels)
+
+    # print(len(loss))
+    # print([len(input_id) for input_id in input_ids])
+
+    loss = loss.reshape(len(input_ids),-1)
+    ret_scores = torch.zeros(len(input_ids))
+    for i,score in enumerate(loss):
+        ret_scores[i]=(score[score>0].mean())
+
+    self.trainset.__setscore__(sample_idx, ret_scores.detach().cpu().numpy())
+
+    loss = (loss * torch.tensor(weight, device=loss.device).view(-1,1)).mean()
 
     if not return_dict:
         output = (logits,) + outputs[1:]
