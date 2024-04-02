@@ -1,5 +1,29 @@
-# 🦙🌲🤏 Alpaca-LoRA
+# 🦙🌲🤏 Alpaca-LoRA (InfoBatch Version)
+This repository is the InfoBatch adaption of Stanford Alpaca (LoRA) with Dataset Quantization acceleration.
 
+Code to run:
+```
+CUDA_VISIBLE_DEVICES=0 python3 finetune_infobatch.py \
+    --base_model <path-to-llama-7b> \
+    --data_path alpaca_data_dq_k5_1k.json \
+    --output_dir './lora-alpaca' \
+    --num_epochs 15 \
+    --val_set_size=1000 \
+    --learning_rate 1.5e-4 \
+    --batch_size 64 \
+    --cutoff_len=512 \
+    --output_dir='./lora-alpaca' \
+    --lora_target_modules='[q_proj,k_proj,v_proj,o_proj]' \
+    --lora_r=16 \
+    --micro_batch_size=8
+```
+Require only 1 A100 gpu to train in ~20 minutes.
+
+Below is the original repo's readme.
+
+
+
+-----
 - 🤗 **Try the pretrained model out [here](https://huggingface.co/spaces/tloen/alpaca-lora), courtesy of a GPU grant from Huggingface!**
 - Users have created a Discord server for discussion and support [here](https://discord.gg/prbq284xX5)
 - 4/14: Chansung Park's GPT4-Alpaca adapters: https://github.com/tloen/alpaca-lora/issues/340
